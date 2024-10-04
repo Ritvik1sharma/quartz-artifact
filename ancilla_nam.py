@@ -74,20 +74,23 @@ def qiskit_optimize_nam(fn):
     optimize_times = []
     for i in range(3):
         start = time.time()
-        optimized_circ = transpile(circ, basis_gates=['rz', 'cx', 'h', 'x'], optimization_level=i)
+        optimized_circ = transpile(circ, basis_gates=['u1', 'u2', 'u3', 'cx'], optimization_level=i)
+        # optimized_circ = transpile(circ, basis_gates=['rz', 'cx', 'h', 'x'], optimization_level=i)
         optimize_times.append(time.time() - start)
         count_dict = optimized_circ.count_ops()
         gate_cnts.append(sum([count_dict[k] for k in count_dict]))
+
     return gate_cnts, optimize_times
 
 if __name__ == "__main__":
-    qasm_path = os.getcwd() + '/nam-benchmarks/'
+    qasm_path = os.getcwd() + '/ancilla-benchmarks/'
     qasm_fns = [fn for fn in os.listdir(qasm_path) if isfile(join(qasm_path, fn)) and fn[-4:] == 'qasm']
     qasm_full_paths = [qasm_path + fn for fn in qasm_fns]
     with ProcessPoolExecutor(max_workers=32) as executor:
         results = executor.map(qiskit_optimize_nam, qasm_full_paths)
     i = 0
     for r in results:
+        print(results)
         fn = qasm_fns[i]
         i += 1
         print(f"Optimization results of Qiskit for {fn} on Nam's gate set")
